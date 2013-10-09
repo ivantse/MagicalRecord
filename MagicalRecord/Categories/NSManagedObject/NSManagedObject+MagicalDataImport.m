@@ -303,7 +303,6 @@ NSString * const kMagicalRecordImportAttributeUseDefaultValueWhenNotPresent = @"
 + (NSArray *) MR_importFromArray:(NSArray *)listOfObjectData inContext:(NSManagedObjectContext *)context
 {
     NSMutableArray *dataObjects = [NSMutableArray array];
-
     [listOfObjectData enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
     {
         NSDictionary *objectData = (NSDictionary *)obj;

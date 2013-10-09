@@ -27,18 +27,18 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 {
     __block NSArray *results = nil;
     [context performBlockAndWait:^{
-
+        
         NSError *error = nil;
         
         results = [context executeFetchRequest:request error:&error];
         
-        if (results == nil) 
+        if (results == nil)
         {
             [MagicalRecord handleErrors:error];
         }
-
+        
     }];
-	return results;	
+	return results;
 }
 
 + (NSArray *) MR_executeFetchRequest:(NSFetchRequest *)request
@@ -125,7 +125,7 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 {
 	NSMutableArray *attributes = [NSMutableArray array];
     
-    for (NSString *attributeName in attributesToSortBy) 
+    for (NSString *attributeName in attributesToSortBy)
     {
         NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:attributeName ascending:ascending];
         [attributes addObject:sortDescriptor];
@@ -152,9 +152,9 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 }
 
 + (id) MR_createEntity
-{	
+{
 	NSManagedObject *newEntity = [self MR_createInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-
+    
 	return newEntity;
 }
 
@@ -178,7 +178,7 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
     
 	NSArray *objectsToTruncate = [self MR_executeFetchRequest:request inContext:context];
     
-	for (id objectToTruncate in objectsToTruncate) 
+	for (id objectToTruncate in objectsToTruncate)
     {
 		[objectToTruncate MR_deleteInContext:context];
 	}
@@ -196,7 +196,6 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
     NSFetchRequest *request = [self MR_requestAllInContext:context];
     [request setReturnsObjectsAsFaults:YES];
     [request setIncludesPropertyValues:NO];
-
     NSArray *objectsToDelete = [self MR_executeFetchRequest:request inContext:context];
     for (NSManagedObject *objectToDelete in objectsToDelete)
     {
