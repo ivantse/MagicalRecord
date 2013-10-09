@@ -27,18 +27,18 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 {
     __block NSArray *results = nil;
     [context performBlockAndWait:^{
-
+        
         NSError *error = nil;
         
         results = [context executeFetchRequest:request error:&error];
         
-        if (results == nil) 
+        if (results == nil)
         {
             [MagicalRecord handleErrors:error];
         }
-
+        
     }];
-	return results;	
+	return results;
 }
 
 + (NSArray *) MR_executeFetchRequest:(NSFetchRequest *)request
@@ -83,16 +83,8 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 
 + (NSEntityDescription *) MR_entityDescriptionInContext:(NSManagedObjectContext *)context
 {
-    if ([self respondsToSelector:@selector(entityInManagedObjectContext:)]) 
-    {
-        NSEntityDescription *entity = [self performSelector:@selector(entityInManagedObjectContext:) withObject:context];
-        return entity;
-    }
-    else
-    {
-        NSString *entityName = [self MR_entityName];
-        return [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
-    }
+    NSString *entityName = [self MR_entityName];
+    return [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
 }
 
 + (NSEntityDescription *) MR_entityDescription
@@ -129,7 +121,7 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 {
 	NSMutableArray *attributes = [NSMutableArray array];
     
-    for (NSString *attributeName in attributesToSortBy) 
+    for (NSString *attributeName in attributesToSortBy)
     {
         NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:attributeName ascending:ascending];
         [attributes addObject:sortDescriptor];
@@ -152,21 +144,13 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 
 + (id) MR_createInContext:(NSManagedObjectContext *)context
 {
-    if ([self respondsToSelector:@selector(insertInManagedObjectContext:)]) 
-    {
-        id entity = [self performSelector:@selector(insertInManagedObjectContext:) withObject:context];
-        return entity;
-    }
-    else
-    {
-        return [NSEntityDescription insertNewObjectForEntityForName:[self MR_entityName] inManagedObjectContext:context];
-    }
+    return [NSEntityDescription insertNewObjectForEntityForName:[self MR_entityName] inManagedObjectContext:context];
 }
 
 + (id) MR_createEntity
-{	
+{
 	NSManagedObject *newEntity = [self MR_createInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-
+    
 	return newEntity;
 }
 
@@ -190,7 +174,7 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
     
 	NSArray *objectsToTruncate = [self MR_executeFetchRequest:request inContext:context];
     
-	for (id objectToTruncate in objectsToTruncate) 
+	for (id objectToTruncate in objectsToTruncate)
     {
 		[objectToTruncate MR_deleteInContext:context];
 	}
@@ -205,10 +189,14 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 
 + (BOOL) MR_truncateAllInContext:(NSManagedObjectContext *)context
 {
-    NSArray *allEntities = [self MR_findAllInContext:context];
-    for (NSManagedObject *obj in allEntities)
+    NSFetchRequest *request = [self MR_requestAllInContext:context];
+    [request setReturnsObjectsAsFaults:YES];
+    [request setIncludesPropertyValues:NO];
+    
+    NSArray *objectsToDelete = [self MR_executeFetchRequest:request inContext:context];
+    for (NSManagedObject *objectToDelete in objectsToDelete)
     {
-        [obj MR_deleteInContext:context];
+        [objectToDelete MR_deleteInContext:context];
     }
     return YES;
 }
@@ -222,6 +210,19 @@ static NSUInteger defaultBatchSize = kMagicalRecordDefaultBatchSize;
 - (id) MR_inContext:(NSManagedObjectContext *)otherContext
 {
     NSError *error = nil;
+    
+    if ([[self objectID] isTemporaryID])
+    {
+        BOOL success = [[self managedObjectContext] obtainPermanentIDsForObjects:@[self] error:&error];
+        if (!success)
+        {
+            [MagicalRecord handleErrors:error];
+            return nil;
+        }
+    }
+    
+    error = nil;
+    
     NSManagedObject *inContext = [otherContext existingObjectWithID:[self objectID] error:&error];
     [MagicalRecord handleErrors:error];
     

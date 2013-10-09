@@ -18,8 +18,6 @@ static NSString * const kMagicalRecordNSManagedObjectContextWorkingName = @"kNSM
 
 - (void) MR_mergeChangesFromNotification:(NSNotification *)notification;
 - (void) MR_mergeChangesOnMainThread:(NSNotification *)notification;
-+ (void) MR_setDefaultContext:(NSManagedObjectContext *)moc;
-+ (void) MR_setRootSavingContext:(NSManagedObjectContext *)context;
 
 @end
 
